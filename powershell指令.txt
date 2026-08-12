@@ -1,0 +1,7 @@
+cd "D:\ej\材料\codex\zsxq"
+
+& "C:\Users\cjzs0\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" .\main.py --company 德科立 --group-name 每日调研 --days 30 --output-dir .\reports --max-keywords 10 --max-topics 100
+
+PowerShell 里执行带完整路径的 .exe，前面加 & 。
+
+

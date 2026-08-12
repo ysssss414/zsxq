@@ -1,0 +1,9 @@
+.env
+.runtime-home/
+.runtime-config/
+.playwright-cli/
+node_modules/
+reports/
+__pycache__/
+*.pyc
+npm-debug.log*
