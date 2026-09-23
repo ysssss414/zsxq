@@ -21,5 +21,9 @@
   "live_zsxq_calls": 0,
   "live_deepseek_calls": 0,
   "automatic_pro_a_post": false,
-  "draft_pr_created": false
+  "draft_pr_created": true,
+  "draft_pr_number": 1,
+  "draft_pr_url": "https://github.com/ysssss414/zsxq/pull/1",
+  "draft_pr_open": true,
+  "merged": false
 }
