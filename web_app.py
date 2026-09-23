@@ -320,7 +320,20 @@ def read_report(run_name: str, reports_dir: Path = REPORTS_DIR) -> dict[str, Any
         "markdown": markdown,
         "html": markdown_to_html(markdown),
         "report_path": str(run_dir / "report.md"),
+        "bundle_download": (f"/api/reports/{safe_name}/pro-a-export"
+                            if (run_dir / "pro_a_export.zip").is_file() else ""),
     }
+
+
+def read_bundle(run_name: str, reports_dir: Path = REPORTS_DIR) -> bytes:
+    safe_name = validate_run_name(run_name)
+    run_dir = (reports_dir / safe_name).resolve()
+    if reports_dir.resolve() not in run_dir.parents or not run_dir.is_dir():
+        raise FileNotFoundError("Bundle 不存在。")
+    bundle = run_dir / "pro_a_export.zip"
+    if bundle.is_symlink() or not bundle.is_file():
+        raise FileNotFoundError("Bundle 不存在。")
+    return bundle.read_bytes()
 
 
 def validate_run_name(run_name: str) -> str:
@@ -363,6 +376,9 @@ def job_to_dict(job: Job, include_report: bool = False) -> dict[str, Any]:
         "report_path": job.report_path,
         "error": job.error,
         "returncode": job.returncode,
+        "bundle_download": (f"/api/reports/{Path(job.output_dir).name}/pro-a-export"
+                            if job.status == "success" and job.output_dir and
+                            (Path(job.output_dir) / "pro_a_export.zip").is_file() else ""),
     }
     if include_report and job.report_path:
         markdown = read_text_file(Path(job.report_path))
@@ -447,6 +463,9 @@ class WebHandler(BaseHTTPRequestHandler):
                     self.send_json(payload)
             elif path == "/api/reports":
                 self.send_json({"reports": scan_reports()})
+            elif path.startswith("/api/reports/") and path.endswith("/pro-a-export"):
+                run_name = path[len("/api/reports/"):-len("/pro-a-export")]
+                self.send_bytes(read_bundle(run_name), "application/zip", "pro_a_export.zip")
             elif path.startswith("/api/reports/"):
                 run_name = path.split("/api/reports/", 1)[1]
                 self.send_json(read_report(run_name))
@@ -496,6 +515,14 @@ class WebHandler(BaseHTTPRequestHandler):
         data = markup.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def send_bytes(self, data: bytes, content_type: str, filename: str) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -763,6 +790,7 @@ INDEX_HTML = r"""<!doctype html>
         <span id="status-badge" class="badge">未运行</span>
       </div>
       <div class="path" id="report-path"></div>
+      <a id="bundle-download" style="display:none" download="pro_a_export.zip">Download pro_a bundle</a>
       <pre id="logs">等待提交任务。</pre>
 
       <div class="tabs">
@@ -789,12 +817,14 @@ INDEX_HTML = r"""<!doctype html>
       if (status === "success") badge.classList.add("success");
       if (status === "failed") badge.classList.add("failed");
     }
-    function setReport(html, markdown, path) {
+    function setReport(html, markdown, path, bundleUrl) {
       state.reportHtml = html || "";
       state.reportMarkdown = markdown || "";
       $("report-rendered").innerHTML = state.reportHtml || "暂无报告内容。";
       $("report-raw").textContent = state.reportMarkdown || "";
       $("report-path").textContent = path ? `报告路径：${path}` : "";
+      $("bundle-download").href = bundleUrl || "";
+      $("bundle-download").style.display = bundleUrl ? "" : "none";
     }
     function showRendered() {
       $("tab-rendered").classList.add("active");
@@ -853,7 +883,7 @@ INDEX_HTML = r"""<!doctype html>
     }
     async function openReport(runName) {
       const report = await fetchJson(`/api/reports/${encodeURIComponent(runName)}`);
-      setReport(report.html, report.markdown, report.report_path);
+      setReport(report.html, report.markdown, report.report_path, report.bundle_download);
       setStatus("history");
       $("logs").textContent = `已打开历史报告：${runName}`;
       showRendered();
@@ -888,7 +918,7 @@ INDEX_HTML = r"""<!doctype html>
         state.jobId = job.id;
         setStatus(job.status);
         $("logs").textContent = "任务已提交。";
-        setReport("", "", "");
+        setReport("", "", "", "");
         pollJob();
       } catch (error) {
         setError(error.message);
@@ -904,7 +934,7 @@ INDEX_HTML = r"""<!doctype html>
         $("logs").scrollTop = $("logs").scrollHeight;
         if (job.report_path) $("report-path").textContent = `报告路径：${job.report_path}`;
         if (job.status === "success") {
-          setReport(job.html, job.markdown, job.report_path);
+          setReport(job.html, job.markdown, job.report_path, job.bundle_download);
           $("submit-button").disabled = false;
           clearTimeout(state.pollTimer);
           loadHistory();

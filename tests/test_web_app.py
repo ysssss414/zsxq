@@ -113,6 +113,13 @@ class WebAppTests(unittest.TestCase):
             report = web_app.read_report(run_dir.name, reports_dir)
             self.assertIn("# 核心结论", report["markdown"])
             self.assertIn("<h1>核心结论</h1>", report["html"])
+            self.assertEqual(report["bundle_download"], "")
+            (run_dir / "pro_a_export.zip").write_bytes(b"synthetic-bundle")
+            self.assertEqual(web_app.read_bundle(run_dir.name, reports_dir), b"synthetic-bundle")
+            self.assertEqual(web_app.read_report(run_dir.name, reports_dir)["bundle_download"],
+                             f"/api/reports/{run_dir.name}/pro-a-export")
+            with self.assertRaises(web_app.ValidationError):
+                web_app.read_bundle("../unsafe", reports_dir)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,17 @@
+{
+  "contract_version": "zsxq-pro-a-community-export-v1",
+  "members": ["manifest.json", "topics.jsonl"],
+  "encoding": "UTF-8",
+  "json": "sort_keys=true, ensure_ascii=false, separators=(',', ':'), trailing newline",
+  "bundle_sha256": "SHA256(canonical manifest without bundle_sha256, then newline, then topics.jsonl bytes)",
+  "bundle_id": "COMMUNITY_BUNDLE_ plus first 24 uppercase hex characters of topics_file_sha256",
+  "order": "published_at descending by UTC instant, null dates last, topic_id ascending",
+  "zip": "deflate level 9, members in listed order, fixed 1980-01-01 00:00:00 timestamp",
+  "limits": {
+    "max_bundle_bytes": 20971520,
+    "max_uncompressed_bytes": 41943040,
+    "max_topics": 100,
+    "max_evidence_chars_per_topic": 12000,
+    "max_total_evidence_chars": 500000
+  }
+}
