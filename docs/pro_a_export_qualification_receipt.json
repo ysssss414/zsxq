@@ -1,0 +1,25 @@
+{
+  "document_type": "stage7_pro_a_export_qualification_receipt",
+  "status": "PASS",
+  "repository_baseline": "56666b06fd5e72484301b53b5020961721bb49e9",
+  "contract_version": "zsxq-pro-a-community-export-v1",
+  "contract_sha256": "6a3e2dc77287d426b8afda46df9fed24b6188e27df16946a8e88b59d91d66d48",
+  "synthetic_fixture": {
+    "input_topics": 3,
+    "in_range_topics": 3,
+    "exported_topics": 2,
+    "omitted_unrelated": 1,
+    "bundle_sha256": "4b83f78292314df321b93667283271b41591e1bbfa753c22673daaf86f8b1ce8",
+    "zip_sha256": "3ce2d324b8ce7a7ef271283f6058556b78b71298dc775fed891c570f4055391b",
+    "byte_deterministic": true,
+    "ai_summary_in_evidence": false,
+    "ai_impact_in_evidence": false,
+    "ai_verification_in_evidence": false,
+    "synthetic_credential_sentinels_present": false
+  },
+  "tests": {"unittest_passed": 11, "compileall": "PASS", "git_diff_check": "PASS"},
+  "live_zsxq_calls": 0,
+  "live_deepseek_calls": 0,
+  "automatic_pro_a_post": false,
+  "draft_pr_created": false
+}

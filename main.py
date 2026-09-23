@@ -204,9 +204,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     report_path = writer.write_markdown("report.md", markdown)
 
-    writer.write_json(
-        "run_metadata.json",
-        {
+    run_metadata = {
             "company": args.company,
             "group_id": group_id,
             "group_label": group_label,
@@ -234,8 +232,11 @@ def main(argv: list[str] | None = None) -> int:
                 "report": "report.md",
                 "errors": "errors.jsonl",
             },
-        },
-    )
+        }
+    writer.write_json("run_metadata.json", run_metadata)
+    from pro_a_export import export_run
+    run_metadata["pro_a_export"] = export_run(writer.run_dir)
+    writer.write_json("run_metadata.json", run_metadata)
 
     print(f"Markdown report: {report_path}")
     return 0
